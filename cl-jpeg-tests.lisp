@@ -95,3 +95,14 @@
     (with-open-file (in file :direction :input :element-type '(unsigned-byte 8))
       (jpeg:decode-stream in :descriptor descriptor :cached-source-p t))
     (is (eql d1 (jpeg::descriptor-source-cache descriptor)))))
+
+(test read-with-supplied-cached-source
+  (let ((file (test-image "truck.jpeg"))
+	(descriptor (jpeg:make-descriptor))
+	cache img)
+    (with-open-file (in file :direction :input :element-type '(unsigned-byte 8))
+      (setf cache (make-array (file-length in) :element-type '(unsigned-byte 8))
+	    (jpeg::descriptor-source-cache descriptor) cache
+	    img (jpeg:decode-stream in :descriptor descriptor :cached-source-p t)))
+    (is (eql cache (jpeg::descriptor-source-cache descriptor)))
+    (is (= (array-element-sum img) 224236))))
