@@ -40,6 +40,21 @@
     (is (equal (type-of img) '(simple-array (unsigned-byte 8) (10880))))
     (is (= (array-element-sum img) 1132807))))
 
+(test read-8-bit-gray-stream
+  (let* ((file (test-image "truck-gray.jpeg"))
+         (img (with-open-file (in file :direction :input :element-type '(unsigned-byte 8))
+		(jpeg:decode-stream in))))
+    (is (equal (type-of img) '(simple-array (unsigned-byte 8) (10880))))
+    (is (= (array-element-sum img) 1132807))))
+
+(test read-8-bit-gray-file-dimensions
+  (let* ((file (test-image "truck-gray.jpeg")))
+    (multiple-value-bind (height width ncomp)
+        (jpeg:jpeg-file-dimensions file)
+      (is (= height 85))
+      (is (= width 128))
+      (is (= ncomp 1)))))
+
 (test write-8-bit-gray
   (let* ((file (test-image "truck-gray.jpeg")))
     (multiple-value-bind (img height width ncomp)
@@ -62,6 +77,21 @@
          (img (jpeg:decode-image file)))
     (is (equal (type-of img) '(simple-array (unsigned-byte 8) (2016))))
     (is (= (array-element-sum img) 224236))))
+
+(test read-8-bit-rgb-stream
+  (let* ((file (test-image "truck.jpeg"))
+         (img (with-open-file (in file :direction :input :element-type '(unsigned-byte 8))
+		(jpeg:decode-stream in))))
+    (is (equal (type-of img) '(simple-array (unsigned-byte 8) (2016))))
+    (is (= (array-element-sum img) 224236))))
+
+(test read-8-bit-rgb-file-dimensions
+  (let* ((file (test-image "truck.jpeg")))
+    (multiple-value-bind (height width ncomp)
+        (jpeg:jpeg-file-dimensions file)
+      (is (= height 21))
+      (is (= width 32))
+      (is (= ncomp 3)))))
 
 (test write-8-bit-rgb
   (let* ((file (test-image "truck.jpeg")))
