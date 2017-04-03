@@ -79,3 +79,30 @@
           (let ((img-diff (abs (sum-of-element-wise-differences img input-img)))
                 (difference-threshold (* (length img) 2)))
             (is (< img-diff difference-threshold))))))))
+
+(test read-with-cached-source
+  (let* ((file (test-image "truck.jpeg"))
+         (img (jpeg:decode-image file :cached-source-p t)))
+    (is (equal (type-of img) '(simple-array (unsigned-byte 8) (2016))))
+    (is (= (array-element-sum img) 224236))))
+
+(test read-with-cached-source-twice
+  (let* ((file (test-image "truck.jpeg"))
+	 (descriptor (jpeg:make-descriptor))
+         (img (with-open-file (in file :direction :input :element-type '(unsigned-byte 8))
+		(jpeg:decode-stream in :descriptor descriptor :cached-source-p t)))
+	 (d1 (jpeg::descriptor-source-cache descriptor)))
+    (with-open-file (in file :direction :input :element-type '(unsigned-byte 8))
+      (jpeg:decode-stream in :descriptor descriptor :cached-source-p t))
+    (is (eql d1 (jpeg::descriptor-source-cache descriptor)))))
+
+(test read-with-supplied-cached-source
+  (let ((file (test-image "truck.jpeg"))
+	(descriptor (jpeg:make-descriptor))
+	cache img)
+    (with-open-file (in file :direction :input :element-type '(unsigned-byte 8))
+      (setf cache (make-array (file-length in) :element-type '(unsigned-byte 8))
+	    (jpeg::descriptor-source-cache descriptor) cache
+	    img (jpeg:decode-stream in :descriptor descriptor :cached-source-p t)))
+    (is (eql cache (jpeg::descriptor-source-cache descriptor)))
+    (is (= (array-element-sum img) 224236))))
