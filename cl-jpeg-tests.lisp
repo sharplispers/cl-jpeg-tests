@@ -106,3 +106,10 @@
 	    img (jpeg:decode-stream in :descriptor descriptor :cached-source-p t)))
     (is (eql cache (jpeg::descriptor-source-cache descriptor)))
     (is (= (array-element-sum img) 224236))))
+
+(test read-8-bit-rgb-file-dimensions
+  (let* ((file (test-image "truck.jpeg")))
+    (multiple-value-bind (h w ncomp type) (jpeg:jpeg-file-dimensions file)
+      (is (= h 21))
+      (is (= w 32))
+      (is (= ncomp 3)))))
