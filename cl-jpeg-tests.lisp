@@ -144,3 +144,22 @@
       (is (= height 192))
       (is (= width 256))
       (is (= ncomp 3)))))
+
+(test read-8-bit-cmyk-image
+  (let* ((file (test-image "truck-cmyk.jpeg")))
+    (multiple-value-bind (img height width ncomp adobe-app14-transform)
+        (jpeg:decode-image file)
+      (declare (ignorable img))
+      (is (= height 21))
+      (is (= width 32))
+      (is (= ncomp 4))
+      (is (eql adobe-app14-transform :ycck-cmyk)))))
+
+(test read-and-convert-8-bit-cmyk-image
+  (let* ((file (test-image "truck-cmyk.jpeg")))
+    (multiple-value-bind (img height width)
+        (jpeg:decode-image file)
+      (let* ((buf (jpeg:allocate-buffer height width 3))
+	     (rgb-img (jpeg:convert-cmyk-to-rgb img height width :rgb-buffer buf)))
+	(is (eql rgb-img buf))
+	(is (= (array-element-sum img) 507667))))))
